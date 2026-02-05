@@ -87,7 +87,7 @@
                 <div class="flex items-center gap-3">
                     <div class="px-4 py-3 bg-slate-900 rounded-2xl border border-white/5 text-sm flex flex-col min-w-[140px]">
                         <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Database Size</span> 
-                        <span id="totalMovies" class="font-bold text-white text-base">0 Movies</span>
+                        <span id="totalMovies" class="font-bold text-white text-base text-nowrap">0 Movies</span>
                     </div>
                 </div>
             </div>
@@ -216,7 +216,8 @@
                             allMovies = allMovies.concat(data);
                             volumesLoaded++;
                             
-                            totalMovies.innerText = `${allMovies.toLocaleString()} Movies`;
+                            // FIXED: Added .length so it shows the number of movies, not the movie data itself
+                            totalMovies.innerText = `${allMovies.length.toLocaleString()} Movies`;
                             
                             const randomFromVolume = getRandomSubset(data, 2);
                             homePicks = [...homePicks, ...randomFromVolume];
@@ -240,7 +241,8 @@
         }
 
         function updateDisplay() {
-            topPicksGrid.innerHTML = homePicks.slice(0, 4).map(m => createCard(m)).join('');
+            // Pick a fresh random 4 movies for the Recommended section on every volume load
+            topPicksGrid.innerHTML = getRandomSubset(homePicks, 4).map(m => createCard(m)).join('');
             
             if (!searchInput.value.trim()) {
                 renderMovies(allMovies.slice(0, 20), movieGrid);
