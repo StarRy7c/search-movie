@@ -85,13 +85,9 @@
                     <p class="text-slate-400 text-lg">Auto-scanning JSON database for the latest releases.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="px-4 py-3 bg-slate-900 rounded-2xl border border-white/5 text-sm flex flex-col min-w-[120px]">
-                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Volumes</span> 
-                        <span id="dbVolumes" class="font-bold text-sky-400 text-base">Scanning...</span>
-                    </div>
-                    <div class="px-4 py-3 bg-slate-900 rounded-2xl border border-white/5 text-sm flex flex-col min-w-[120px]">
-                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Total Movies</span> 
-                        <span id="totalMovies" class="font-bold text-white text-base">0</span>
+                    <div class="px-4 py-3 bg-slate-900 rounded-2xl border border-white/5 text-sm flex flex-col min-w-[140px]">
+                        <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Database Size</span> 
+                        <span id="totalMovies" class="font-bold text-white text-base">0 Movies</span>
                     </div>
                 </div>
             </div>
@@ -139,7 +135,6 @@
         const movieGrid = document.getElementById('movieGrid');
         const topPicksGrid = document.getElementById('topPicksGrid');
         const searchInput = document.getElementById('searchInput');
-        const dbVolumes = document.getElementById('dbVolumes');
         const totalMovies = document.getElementById('totalMovies');
         const homeHeader = document.getElementById('homeHeader');
         const searchStats = document.getElementById('searchStats');
@@ -163,10 +158,8 @@
         }
 
         function createCard(movie) {
-            // Check if movie is actually an array/object to prevent text-dumping
             if (!movie || (typeof movie !== 'object' && !Array.isArray(movie))) return '';
 
-            // Handle both object {id, name, size} and array [id, name, size] formats
             const id = Array.isArray(movie) ? movie[0] : movie.id;
             const name = Array.isArray(movie) ? movie[1] : movie.name;
             const size = Array.isArray(movie) ? movie[2] : movie.size;
@@ -201,13 +194,11 @@
             `;
         }
 
-        // Helper to pick random items from an array
         function getRandomSubset(arr, count) {
             const shuffled = [...arr].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         }
 
-        // --- DYNAMIC AUTO-DISCOVERY LOADER ---
         async function init() {
             let volumeIndex = 0;
             let keepScanning = true;
@@ -225,14 +216,11 @@
                             allMovies = allMovies.concat(data);
                             volumesLoaded++;
                             
-                            dbVolumes.innerText = `${volumesLoaded} Volume${volumesLoaded > 1 ? 's' : ''}`;
-                            totalMovies.innerText = allMovies.toLocaleString();
+                            totalMovies.innerText = `${allMovies.toLocaleString()} Movies`;
                             
-                            // Randomly pick 2 movies from this volume for Recommended section
                             const randomFromVolume = getRandomSubset(data, 2);
                             homePicks = [...homePicks, ...randomFromVolume];
 
-                            // Refresh display incrementally
                             updateDisplay();
                         }
                         volumeIndex++;
@@ -243,7 +231,7 @@
                     keepScanning = false;
                 }
                 
-                if (volumeIndex > 50) break; // Limit scanning to 50 files for safety
+                if (volumeIndex > 50) break;
             }
 
             if (volumesLoaded === 0) {
@@ -252,10 +240,8 @@
         }
 
         function updateDisplay() {
-            // Render Recommended Picks (Top 4 randomly selected across all loaded volumes)
             topPicksGrid.innerHTML = homePicks.slice(0, 4).map(m => createCard(m)).join('');
             
-            // Render Main Grid (Latest 20)
             if (!searchInput.value.trim()) {
                 renderMovies(allMovies.slice(0, 20), movieGrid);
             }
@@ -263,18 +249,16 @@
         }
 
         function renderMovies(movies, container) {
-            // Ensure movies is an array and filter out any invalid items
             const validMovies = Array.isArray(movies) ? movies.filter(m => m !== null) : [];
             
             if (validMovies.length > 0) {
                 container.innerHTML = validMovies.map(m => createCard(m)).join('');
             } else {
-                container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500">No matches found across ${volumesLoaded} volumes.</div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500">No matches found across all volumes.</div>`;
             }
             lucide.createIcons();
         }
 
-        // --- ADVANCED SCORING SEARCH ---
         function advancedSearch(query) {
             if (!query) return allMovies.slice(0, 20);
             
